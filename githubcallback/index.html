@@ -37,8 +37,75 @@
       }).catch(err => {
         console.error("Errore durante la copia:", err);
       });
+
+      // Ora scambia il codice con un access_token
+      exchangeCodeForAccessToken(code);
     } else {
-      document.body.innerText = "Accesso annullato o fallito.";
+      // Se il codice non è presente, mostriamo un messaggio di errore
+      document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
+    }
+
+    // Funzione per scambiare il codice di autorizzazione con un access_token
+    function exchangeCodeForAccessToken(code) {
+      const clientId = 'Ov23liiPkBEnvPNXer7V'; // Il tuo client ID di GitHub
+      const clientSecret = 'c1b38f9cd22ebec732466ac6c6cd4737c81c07f1'; // Il tuo client secret di GitHub
+      const redirectUri = 'https://g-visconti.github.io/callback-github/githubcallback'; // La tua URL di redirect
+
+      const url = 'https://github.com/login/oauth/access_token';
+
+      const body = new URLSearchParams();
+      body.append('client_id', clientId);
+      body.append('client_secret', clientSecret);
+      body.append('code', code);
+      body.append('redirect_uri', redirectUri);
+
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: body
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.access_token) {
+          console.log('Access Token ottenuto: ', data.access_token);
+          // Passa il token al backend per Cognito
+          sendTokenToBackend(data.access_token);
+        } else {
+          console.error('Errore: Nessun access token ricevuto', data);
+          document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Si è verificato un errore nel ricevere il token.</p>";
+        }
+      })
+      .catch(error => {
+        console.error('Errore nella richiesta di scambio codice con token:', error);
+        document.body.innerHTML = "<h2>Errore di autenticazione</h2><p>Si è verificato un errore durante il processo di autenticazione.</p>";
+      });
+    }
+
+    // Funzione per inviare il token al backend (AWS Cognito)
+    function sendTokenToBackend(accessToken) {
+      // Esegui la richiesta al backend per autenticarti con Cognito, passando il token
+      fetch('https://tuo-backend.com/authenticateWithGitHub', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ access_token: accessToken })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Autenticazione riuscita con Cognito');
+          window.location.href = 'dashboard.html';  // Redirect alla tua dashboard o area protetta
+        } else {
+          console.error('Errore durante l\'autenticazione con Cognito');
+          document.body.innerHTML = "<h2>Errore nel login</h2><p>Si è verificato un errore durante l'autenticazione con Cognito.</p>";
+        }
+      })
+      .catch(error => {
+        console.error('Errore durante la richiesta al backend:', error);
+      });
     }
   </script>
 </body>
