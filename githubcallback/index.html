@@ -86,7 +86,7 @@
     // Funzione per inviare il token al backend (AWS Cognito)
     function sendTokenToBackend(accessToken) {
       // Esegui la richiesta al backend per autenticarti con Cognito, passando il token
-      fetch('https://tuo-backend.com/authenticateWithGitHub', {
+      fetch('https://5qfi09ze47.execute-api.eu-west-1.amazonaws.com/startGitHub', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
