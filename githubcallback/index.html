@@ -43,7 +43,7 @@
     document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
   }
 
-  // Devi definire questa funzione!
+  // Funzione che invia il codice di autorizzazione al backend e gestisce la risposta
   function exchangeCodeForAccessToken(code) {
     fetch('https://5qfi09ze47.execute-api.eu-west-1.amazonaws.com/startGitHub', {
       method: 'POST',
@@ -56,7 +56,16 @@
     .then(data => {
       if (data.access_token) {
         console.log('Access Token ottenuto: ', data.access_token);
-        window.location.href = 'dashboard.html';
+        
+        // Memorizza l'access token localmente (può essere utilizzato per altre operazioni)
+        localStorage.setItem('access_token', data.access_token);
+
+        // Mostra un messaggio di benvenuto
+        document.body.innerHTML = `
+          <h2>Benvenuto!</h2>
+          <p>L'accesso è stato completato con successo.</p>
+          <p>Token di accesso ricevuto e memorizzato localmente.</p>
+        `;
       } else {
         console.error('Errore: Nessun access token ricevuto', data);
         document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Token non ricevuto.</p>";
@@ -67,6 +76,6 @@
       document.body.innerHTML = "<h2>Errore di autenticazione</h2><p>Si è verificato un errore durante il processo.</p>";
     });
   }
-</script>
+  </script>
 </body>
 </html>
