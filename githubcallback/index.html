@@ -28,6 +28,7 @@
   const code = urlParams.get('code');
 
   if (code) {
+    console.log("Codice di autorizzazione trovato: " + code);
     document.getElementById('codeDisplay').innerText = code;
 
     navigator.clipboard.writeText(code).then(() => {
@@ -36,10 +37,12 @@
       console.error("Errore durante la copia:", err);
     });
 
+    console.log("Chiamata per ottenere l'access token dal backend...");
     // Chiamiamo la funzione solo ora che è definita correttamente
     exchangeCodeForAccessToken(code);
 
   } else {
+    console.log("Nessun codice di autorizzazione trovato.");
     document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
   }
 
@@ -52,20 +55,17 @@
       },
       body: JSON.stringify({ code })
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log("Risposta ricevuta dal server.");
+      return response.json(); // Convertiamo la risposta in formato JSON
+    })
     .then(data => {
+      console.log("Dati ricevuti dal backend:", data); // Aggiungiamo un log per i dati ricevuti
       if (data.access_token) {
         console.log('Access Token ottenuto: ', data.access_token);
-        
-        // Memorizza l'access token localmente (può essere utilizzato per altre operazioni)
-        localStorage.setItem('access_token', data.access_token);
-
-        // Mostra un messaggio di benvenuto
-        document.body.innerHTML = `
-          <h2>Benvenuto!</h2>
-          <p>L'accesso è stato completato con successo.</p>
-          <p>Token di accesso ricevuto e memorizzato localmente.</p>
-        `;
+        localStorage.setItem('access_token', data.access_token);  // Memorizziamo il token
+        console.log("Token memorizzato con successo.");
+        window.location.href = 'dashboard.html';  // Reindirizza a dashboard
       } else {
         console.error('Errore: Nessun access token ricevuto', data);
         document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Token non ricevuto.</p>";
@@ -79,3 +79,4 @@
   </script>
 </body>
 </html>
+
