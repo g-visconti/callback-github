@@ -24,53 +24,49 @@
   <code id="codeDisplay">Caricamento codice...</code>
 
   <script>
-    // Estrae il codice di autorizzazione dalla URL (es. ?code=...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');  // Estrae il parametro 'code'
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
 
-    if (code) {
-      document.getElementById('codeDisplay').innerText = code;
+  if (code) {
+    document.getElementById('codeDisplay').innerText = code;
 
-      // Copia automaticamente il codice negli appunti
-      navigator.clipboard.writeText(code).then(() => {
-        console.log("Codice copiato negli appunti.");
-      }).catch(err => {
-        console.error("Errore durante la copia:", err);
-      });
+    navigator.clipboard.writeText(code).then(() => {
+      console.log("Codice copiato negli appunti.");
+    }).catch(err => {
+      console.error("Errore durante la copia:", err);
+    });
 
-      // Ora scambia il codice con un access_token
-      exchangeCodeForAccessToken(code);
-    } else {
-      // Se il codice non è presente, mostriamo un messaggio di errore
-      document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
-    }
+    // Chiamiamo la funzione solo ora che è definita correttamente
+    exchangeCodeForAccessToken(code);
 
-    // Funzione per scambiare il codice di autorizzazione con un access_token
+  } else {
+    document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
+  }
+
+  // Devi definire questa funzione!
+  function exchangeCodeForAccessToken(code) {
     fetch('https://5qfi09ze47.execute-api.eu-west-1.amazonaws.com/startGitHub', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ code })  // mandiamo solo il code alla Lambda
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.access_token) {
-      console.log('Access Token ottenuto: ', data.access_token);
-      // Ora puoi loggare l’utente o salvare il token
-      window.location.href = 'dashboard.html';
-    } else {
-      console.error('Errore: Nessun access token ricevuto', data);
-      document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Token non ricevuto.</p>";
-    }
-  })
-  .catch(error => {
-    console.error('Errore nella richiesta al backend Lambda:', error);
-    document.body.innerHTML = "<h2>Errore di autenticazione</h2><p>Si è verificato un errore durante il processo.</p>";
-  });
-}
-      
-    
-  </script>
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.access_token) {
+        console.log('Access Token ottenuto: ', data.access_token);
+        window.location.href = 'dashboard.html';
+      } else {
+        console.error('Errore: Nessun access token ricevuto', data);
+        document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Token non ricevuto.</p>";
+      }
+    })
+    .catch(error => {
+      console.error('Errore nella richiesta al backend Lambda:', error);
+      document.body.innerHTML = "<h2>Errore di autenticazione</h2><p>Si è verificato un errore durante il processo.</p>";
+    });
+  }
+</script>
 </body>
 </html>
