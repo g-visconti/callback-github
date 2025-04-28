@@ -16,6 +16,21 @@
       margin-top: 1em;
       font-size: 1.2em;
     }
+    .log {
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 1em;
+      margin-top: 1em;
+      font-size: 1.1em;
+      color: #333;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 1em;
+      margin-top: 1em;
+    }
   </style>
 </head>
 <body>
@@ -23,24 +38,38 @@
   <p>Il codice di autorizzazione è stato copiato automaticamente negli appunti. Torna nell'app per completare il login.</p>
   <code id="codeDisplay">Caricamento codice...</code>
 
+  <div id="logContainer" class="log"></div>
+  <div id="errorContainer" class="error" style="display:none;"></div>
+
   <script>
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('code');
+
+  function logMessage(message) {
+    const logContainer = document.getElementById('logContainer');
+    logContainer.innerHTML += `<p>${message}</p>`;
+  }
+
+  function showError(message) {
+    const errorContainer = document.getElementById('errorContainer');
+    errorContainer.style.display = 'block';
+    errorContainer.innerHTML = `<p>${message}</p>`;
+  }
 
   if (code) {
     document.getElementById('codeDisplay').innerText = code;
 
     navigator.clipboard.writeText(code).then(() => {
-      console.log("Codice copiato negli appunti.");
+      logMessage("Codice copiato negli appunti.");
     }).catch(err => {
-      console.error("Errore durante la copia:", err);
+      showError("Errore durante la copia negli appunti.");
     });
 
     // Chiamiamo la funzione solo ora che è definita correttamente
     exchangeCodeForAccessToken(code);
 
   } else {
-    document.body.innerHTML = "<h2>Accesso fallito</h2><p>Il login non è riuscito o è stato annullato. Riprova per favore.</p>";
+    showError("Accesso fallito. Il login non è riuscito o è stato annullato.");
   }
 
   // Funzione che invia il codice di autorizzazione al backend e gestisce la risposta
@@ -52,28 +81,37 @@
       },
       body: JSON.stringify({ code })
     })
-    .then(response => response.json())
+    .then(response => {
+      logMessage(`Risposta dal server: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Errore di rete: ${response.statusText}`);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.access_token) {
-        console.log('Access Token ottenuto: ', data.access_token);
-        
-        // Memorizza l'access token localmente (può essere utilizzato per altre operazioni)
+        logMessage('Access Token ottenuto: ' + data.access_token);
         localStorage.setItem('access_token', data.access_token);
 
-        // Mostra un messaggio di benvenuto
         document.body.innerHTML = `
           <h2>Benvenuto!</h2>
           <p>L'accesso è stato completato con successo.</p>
           <p>Token di accesso ricevuto e memorizzato localmente.</p>
         `;
       } else {
-        console.error('Errore: Nessun access token ricevuto', data);
-        document.body.innerHTML = "<h2>Errore di autenticazione con GitHub</h2><p>Token non ricevuto.</p>";
+        logMessage("Nessun access token ricevuto.");
+        if (data.error === 'expired_code') {
+          showError("Il codice di autorizzazione è scaduto. Per favore ripeti il login.");
+        } else if (data.error === 'used_code') {
+          showError("Il codice di autorizzazione è già stato utilizzato. Per favore ripeti il login.");
+        } else {
+          showError("Si è verificato un errore sconosciuto durante l'autenticazione.");
+        }
       }
     })
     .catch(error => {
-      console.error('Errore nella richiesta al backend Lambda:', error);
-      document.body.innerHTML = "<h2>Errore di autenticazione</h2><p>Si è verificato un errore durante il processo.</p>";
+      logMessage('Errore nella richiesta al backend Lambda: ' + error.message);
+      showError("Si è verificato un errore durante il processo di autenticazione.");
     });
   }
   </script>
