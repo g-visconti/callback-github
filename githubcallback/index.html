@@ -47,13 +47,13 @@
 
   function logMessage(message) {
     const logContainer = document.getElementById('logContainer');
-    logContainer.innerHTML += '<p>${message}</p>';
+    logContainer.innerHTML += `<p>${message}</p>`;
   }
 
   function showError(message) {
     const errorContainer = document.getElementById('errorContainer');
     errorContainer.style.display = 'block';
-    errorContainer.innerHTML = '<p>${message}</p>';
+    errorContainer.innerHTML = `<p>${message}</p>`;
   }
 
   if (code) {
@@ -82,9 +82,9 @@
       body: JSON.stringify({ code })
     })
     .then(response => {
-      logMessage('Risposta dal server: ${response.status}');
+      logMessage(`Risposta dal server: ${response.status}`);
       if (!response.ok) {
-        throw new Error('Errore di rete: ${response.statusText}');
+        throw new Error(`Errore di rete: ${response.statusText}`);
       }
       return response.json();
     })
