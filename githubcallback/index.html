@@ -74,7 +74,7 @@
 
   // Funzione che invia il codice di autorizzazione al backend e gestisce la risposta
   function exchangeCodeForAccessToken(code) {
-    fetch('https://5qfi09ze47.execute-api.eu-west-1.amazonaws.com/startGitHub', {
+    fetch('https://5qfi09ze47.execute-api.eu-west-1.amazonaws.com/startGitHub/authenticateWithGitHub', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
